@@ -1,0 +1,6 @@
+{
+  "name": "WAREWISE",
+  "description": "Premium customer e-commerce and hardware platform powered by intelligent fulfillment with interactive order tracking, moving delivery rider telemetry, and AI shopping assistance.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
