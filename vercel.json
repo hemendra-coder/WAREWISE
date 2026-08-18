@@ -1,0 +1,12 @@
+{
+  "framework": "vite",
+  "installCommand": "npm install --prefix warewise --no-fund --no-audit",
+  "buildCommand": "npm --prefix warewise run build",
+  "outputDirectory": "warewise/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

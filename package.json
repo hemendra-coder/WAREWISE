@@ -1,0 +1,13 @@
+{
+  "name": "warewise-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix warewise install --no-fund --no-audit && npm --prefix warewise run build",
+    "dev": "npm --prefix warewise run dev",
+    "start": "npm --prefix warewise run start"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

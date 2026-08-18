@@ -1,0 +1,8 @@
+node_modules/
+warewise/node_modules/
+warewise/dist/
+dist/
+.env
+.env.*
+.DS_Store
+*.log
