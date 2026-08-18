@@ -9,18 +9,20 @@ function MainLayout() {
   const { activePortal, isAdminLoginModalOpen } = useWarehouse();
 
   return (
-    <ErrorBoundary sectionName="WareWise Main Application Root">
-      {activePortal === 'ADMIN' ? (
-        <ErrorBoundary sectionName="Admin Operations Portal Framework">
-          <AdminPortal />
-        </ErrorBoundary>
-      ) : (
-        <ErrorBoundary sectionName="Customer Storefront Portal Framework">
-          <CustomerPortal />
-        </ErrorBoundary>
-      )}
-      {isAdminLoginModalOpen && <AdminLoginModal />}
-    </ErrorBoundary>
+    <main id="main-content" role="main" aria-label="WareWise application workspace" className="min-h-screen">
+      <ErrorBoundary sectionName="WareWise Main Application Root">
+        {activePortal === 'ADMIN' ? (
+          <ErrorBoundary sectionName="Admin Operations Portal Framework">
+            <AdminPortal />
+          </ErrorBoundary>
+        ) : (
+          <ErrorBoundary sectionName="Customer Storefront Portal Framework">
+            <CustomerPortal />
+          </ErrorBoundary>
+        )}
+        {isAdminLoginModalOpen && <AdminLoginModal />}
+      </ErrorBoundary>
+    </main>
   );
 }
 
@@ -28,7 +30,9 @@ export default function App() {
   return (
     <ErrorBoundary sectionName="WareWise System Provider">
       <WarehouseProvider>
-        <MainLayout />
+        <div role="application" aria-label="WareWise enterprise operations platform">
+          <MainLayout />
+        </div>
       </WarehouseProvider>
     </ErrorBoundary>
   );

@@ -199,15 +199,15 @@ export interface Product {
   leadTimeDays: number;
   binLocation: string;
   alternateBinLocation?: string;
-  warehouseId: string;
-  zone: string;
-  health: StockHealthStatus;
-  deliveryConfidence: number;
-  aiVerdict: string;
-  pros: string[];
-  cons: string[];
-  tags: string[];
-  fastDeliveryAvailable: boolean;
+  warehouseId?: string;
+  zone?: string;
+  health?: StockHealthStatus;
+  deliveryConfidence?: number;
+  aiVerdict?: string;
+  pros?: string[];
+  cons?: string[];
+  tags?: string[];
+  fastDeliveryAvailable?: boolean;
   reviews?: CustomerReview[];
   qaList?: ProductQA[];
   variants?: ProductVariant[];
@@ -237,32 +237,51 @@ export interface PriorityFactor {
   reason: string;
 }
 
-export type OrderStatus = 
+export type OrderStatus =
   | 'CREATED'
   | 'PENDING_APPROVAL'
+  | 'PENDING_REVIEW'
   | 'APPROVED'
   | 'PRIORITIZED'
+  | 'PAYMENT_PENDING'
+  | 'PAYMENT_CONFIRMED'
+  | 'PRIORITY_DETERMINED'
+  | 'INVENTORY_CHECK'
+  | 'SHORTAGE_FLAGGED'
+  | 'STOCK_ALLOCATED'
   | 'ALLOCATED'
+  | 'RECEIVED'
   | 'PICKING'
   | 'PICKED'
   | 'PACKING'
   | 'PACKED'
+  | 'QC'
   | 'QC_CHECK'
+  | 'QC_FAILED'
   | 'READY_FOR_DISPATCH'
   | 'DISPATCHED'
+  | 'OUT_FOR_DELIVERY'
   | 'IN_TRANSIT'
   | 'DELIVERED'
+  | 'RETURN_REQUESTED'
+  | 'RETURN_APPROVED'
+  | 'RETURN_REJECTED'
+  | 'RETURNED'
+  | 'REFUND_PROCESSED'
+  | 'COMPLETED'
+  | 'EXCEPTION'
   | 'CANCELLED';
 
 export interface OrderItem {
   productId: string;
   sku: string;
-  name: string;
-  price: number;
+  name?: string;
+  price?: number;
+  pricePerUnit?: number;
   quantity: number;
-  allocatedQty: number;
-  binLocation: string;
-  image: string;
+  allocatedQty?: number;
+  binLocation?: string;
+  image?: string;
   qcVerified?: boolean;
 }
 
@@ -279,21 +298,27 @@ export interface TimelineEvent {
 
 export interface Order {
   id: string;
-  customerName: string;
-  customerEmail: string;
-  customerTier: 'ENTERPRISE_VIP' | 'PRO_TIER' | 'STANDARD';
+  customerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerTier: 'ENTERPRISE_VIP' | 'PRO_TIER' | 'STANDARD' | 'PREMIUM' | 'VIP' | 'REGULAR';
   items: OrderItem[];
   totalAmount: number;
   subtotalAmount?: number;
   discountAmount?: number;
+  discountApplied?: number;
   shippingFee?: number;
   taxAmount?: number;
   paymentMethod?: string;
-  priorityScore: number;
-  priorityTier: OrderPriorityTier;
-  priorityFactors: PriorityFactor[];
+  paymentStatus?: 'PENDING' | 'COMPLETED' | 'FAILED';
+  fulfillmentStatus?: 'PENDING' | 'ALLOCATED' | 'PICKED' | 'PACKED' | 'DELIVERED';
+  priorityScore?: number;
+  priorityTier?: OrderPriorityTier;
+  priorityFactors?: PriorityFactor[];
   status: OrderStatus;
-  allocationStatus: 'FULLY_ALLOCATED' | 'PARTIAL' | 'UNALLOCATED' | 'REALLOCATED';
+  allowPartialDelivery?: boolean;
+  slaMinutesRemaining?: number;
+  allocationStatus?: 'FULLY_ALLOCATED' | 'PARTIAL' | 'UNALLOCATED' | 'REALLOCATED';
   donorOrderId?: string;
   reallocatedQty?: number;
   pickerId?: string;
@@ -302,14 +327,18 @@ export interface Order {
   qcStationId?: string;
   qcStatus?: 'PENDING' | 'PASS' | 'FAIL' | 'REVIEW';
   qcNotes?: string;
+  notes?: string;
+  allocatedItems?: Array<{ productId: string; sku?: string; quantity: number; binLocation?: string }>;
+  pickedItems?: Array<{ productId: string; sku?: string; quantity: number; binLocation?: string }>;
+  packedItems?: Array<{ productId: string; sku?: string; quantity: number; cartonType?: string }>;
   carrier?: string;
   trackingNumber?: string;
   dispatchWave?: string;
-  slaDeadline: string;
-  createdAt: string;
-  fulfillmentTimeline: TimelineEvent[];
+  slaDeadline?: string;
+  createdAt?: string;
+  fulfillmentTimeline?: TimelineEvent[];
   aiExplanation?: string;
-  shippingAddress: {
+  shippingAddress?: string | {
     name?: string;
     phone?: string;
     street: string;
@@ -477,18 +506,20 @@ export interface ReturnRMA {
 
 export interface RefundRecord {
   id: string;
-  refundReference: string;
+  refundReference?: string;
   orderId: string;
   rmaId?: string;
-  customerId: string;
-  customerName: string;
+  customerId?: string;
+  customerName?: string;
   amount: number;
-  paymentMethod: 'UPI' | 'CREDIT_CARD' | 'NET_BANKING' | 'WALLET' | 'STORE_CREDIT';
-  gatewayTransactionId: string;
+  paymentMethod: 'UPI' | 'CREDIT_CARD' | 'NET_BANKING' | 'WALLET' | 'STORE_CREDIT' | 'CARD';
+  gatewayTransactionId?: string;
   status: 'INITIATED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'MANUAL_REVIEW';
   reason: string;
-  approvedBy: string;
-  createdAt: string;
+  approvedBy?: string;
+  createdAt?: string;
+  initiatedAt?: string;
+  approvedAt?: string;
   completedAt?: string;
 }
 

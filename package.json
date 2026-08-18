@@ -5,9 +5,10 @@
   "scripts": {
     "build": "npm --prefix warewise install --no-fund --no-audit && npm --prefix warewise run build",
     "dev": "npm --prefix warewise run dev",
-    "start": "npm --prefix warewise run start"
+    "start": "npm --prefix warewise run start",
+    "test": "npm --prefix warewise run test -- --run"
   },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   }
 }

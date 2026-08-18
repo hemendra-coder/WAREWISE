@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { safeStorageGet, safeStorageSet } from '../utils/storage';
 import {
   Product,
   WarehouseBin,
@@ -455,17 +456,11 @@ const WarehouseContext = createContext<WarehouseContextType | undefined>(undefin
 
 export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Core Entities
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('warewise_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
+  const [products, setProducts] = useState<Product[]>(() => safeStorageGet('warewise_products', INITIAL_PRODUCTS));
 
   const [bins, setBins] = useState<WarehouseBin[]>(INITIAL_BINS);
 
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('warewise_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
-  });
+  const [orders, setOrders] = useState<Order[]>(() => safeStorageGet('warewise_orders', INITIAL_ORDERS));
 
   const [exceptions, setExceptions] = useState<WarehouseException[]>(INITIAL_EXCEPTIONS);
   const [recommendations, setRecommendations] = useState<DecisionRecommendation[]>(INITIAL_RECOMMENDATIONS);
@@ -473,25 +468,13 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [metrics, setMetrics] = useState<OperationalMetrics>(INITIAL_METRICS);
 
-  const [stockReceipts, setStockReceipts] = useState<StockReceipt[]>(() => {
-    const saved = localStorage.getItem('warewise_stock_receipts');
-    return saved ? JSON.parse(saved) : INITIAL_STOCK_RECEIPTS;
-  });
+  const [stockReceipts, setStockReceipts] = useState<StockReceipt[]>(() => safeStorageGet('warewise_stock_receipts', INITIAL_STOCK_RECEIPTS));
 
-  const [stockAdjustments, setStockAdjustments] = useState<StockAdjustment[]>(() => {
-    const saved = localStorage.getItem('warewise_stock_adjustments');
-    return saved ? JSON.parse(saved) : INITIAL_STOCK_ADJUSTMENTS;
-  });
+  const [stockAdjustments, setStockAdjustments] = useState<StockAdjustment[]>(() => safeStorageGet('warewise_stock_adjustments', INITIAL_STOCK_ADJUSTMENTS));
 
-  const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>(() => {
-    const saved = localStorage.getItem('warewise_inventory_transactions');
-    return saved ? JSON.parse(saved) : INITIAL_INVENTORY_TRANSACTIONS;
-  });
+  const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>(() => safeStorageGet('warewise_inventory_transactions', INITIAL_INVENTORY_TRANSACTIONS));
 
-  const [warehouseAlerts, setWarehouseAlerts] = useState<WarehouseAlert[]>(() => {
-    const saved = localStorage.getItem('warewise_warehouse_alerts');
-    return saved ? JSON.parse(saved) : INITIAL_WAREHOUSE_ALERTS;
-  });
+  const [warehouseAlerts, setWarehouseAlerts] = useState<WarehouseAlert[]>(() => safeStorageGet('warewise_warehouse_alerts', INITIAL_WAREHOUSE_ALERTS));
 
   // Admin Control Center Domain States
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>(INITIAL_SUPPORT_TICKETS);
@@ -511,12 +494,10 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [activeAdminRole, setActiveAdminRole] = useState<UserRole>('SUPER_ADMIN');
 
   // Authentication State
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('warewise_current_user');
-    return saved ? JSON.parse(saved) : DEFAULT_CUSTOMER;
-  });
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => safeStorageGet('warewise_current_user', DEFAULT_CUSTOMER));
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('warewise_auth_token') !== 'logged_out';
+    if (typeof window === 'undefined') return true;
+    return window.localStorage.getItem('warewise_auth_token') !== 'logged_out';
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'LOGIN' | 'REGISTER' | 'FORGOT'>('LOGIN');
@@ -584,23 +565,20 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Network Connectivity Listener & Offline State Manager
   const [isOnline, setIsOnline] = useState<boolean>(() => {
-    const saved = localStorage.getItem('warewise_is_online');
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('warewise_is_online') : null;
     if (saved !== null) return saved === 'true';
     return typeof navigator !== 'undefined' ? navigator.onLine : true;
   });
 
-  const [offlineQueue, setOfflineQueue] = useState<OfflineMoveItem[]>(() => {
-    const saved = localStorage.getItem('warewise_offline_queue');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [offlineQueue, setOfflineQueue] = useState<OfflineMoveItem[]>(() => safeStorageGet('warewise_offline_queue', []));
 
   useEffect(() => {
-    localStorage.setItem('warewise_is_online', String(isOnline));
+    safeStorageSet('warewise_is_online', isOnline);
   }, [isOnline]);
 
   // Dark Mode System-Wide Theme State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('warewise_theme');
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('warewise_theme') : null;
     if (saved) return saved === 'dark';
     return false;
   });
@@ -608,17 +586,17 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('warewise_theme', 'dark');
+      safeStorageSet('warewise_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('warewise_theme', 'light');
+      safeStorageSet('warewise_theme', 'light');
     }
   }, [isDarkMode]);
 
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   useEffect(() => {
-    localStorage.setItem('warewise_offline_queue', JSON.stringify(offlineQueue));
+    safeStorageSet('warewise_offline_queue', offlineQueue);
   }, [offlineQueue]);
 
   useEffect(() => {
@@ -682,43 +660,43 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem('warewise_products', JSON.stringify(products));
+    safeStorageSet('warewise_products', products);
   }, [products]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_orders', JSON.stringify(orders));
+    safeStorageSet('warewise_orders', orders);
   }, [orders]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_cart', JSON.stringify(cart));
+    safeStorageSet('warewise_cart', cart);
   }, [cart]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_wishlist', JSON.stringify(wishlist));
+    safeStorageSet('warewise_wishlist', wishlist);
   }, [wishlist]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_addresses', JSON.stringify(customerAddresses));
+    safeStorageSet('warewise_addresses', customerAddresses);
   }, [customerAddresses]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_current_user', JSON.stringify(currentUser));
+    safeStorageSet('warewise_current_user', currentUser);
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_stock_receipts', JSON.stringify(stockReceipts));
+    safeStorageSet('warewise_stock_receipts', stockReceipts);
   }, [stockReceipts]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_stock_adjustments', JSON.stringify(stockAdjustments));
+    safeStorageSet('warewise_stock_adjustments', stockAdjustments);
   }, [stockAdjustments]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_inventory_transactions', JSON.stringify(inventoryTransactions));
+    safeStorageSet('warewise_inventory_transactions', inventoryTransactions);
   }, [inventoryTransactions]);
 
   useEffect(() => {
-    localStorage.setItem('warewise_warehouse_alerts', JSON.stringify(warehouseAlerts));
+    safeStorageSet('warewise_warehouse_alerts', warehouseAlerts);
   }, [warehouseAlerts]);
 
   // Derived Calculations
@@ -1186,7 +1164,7 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const newOrder: Order = {
       id: orderId,
-      customerName: currentUser.name || address.name || 'Valued Customer',
+      customerName: currentUser.name || (typeof address === 'object' ? address.name : undefined) || 'Valued Customer',
       customerEmail: currentUser.email || 'customer@warewise.ai',
       customerTier: 'PRO_TIER',
       items,
@@ -1373,18 +1351,36 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           const statusTitles: Record<OrderStatus, string> = {
             CREATED: 'Order Received & Locked',
             PENDING_APPROVAL: 'Pending Operational Approval',
+            PENDING_REVIEW: 'Awaiting Manual Review',
             APPROVED: 'Order Approved for Fulfillment',
             PRIORITIZED: 'Priority Score Computed',
+            PAYMENT_PENDING: 'Payment pending',
+            PAYMENT_CONFIRMED: 'Payment confirmed',
+            PRIORITY_DETERMINED: 'Priority determined',
+            INVENTORY_CHECK: 'Inventory check',
+            SHORTAGE_FLAGGED: 'Shortage flagged',
+            STOCK_ALLOCATED: 'Stock allocated',
             ALLOCATED: 'Bin Inventory Allocated',
+            RECEIVED: 'Received at hub',
             PICKING: 'Picker Dispatched to Bin',
             PICKED: 'Items Picked from Staging Bins',
             PACKING: 'Items Consolidated in Packing Station',
             PACKED: 'Carton Sealed & Barcode Printed',
+            QC: 'Quality Check in Progress',
             QC_CHECK: 'Optical Weight & Barcode QC Passed',
+            QC_FAILED: 'QC failed',
             READY_FOR_DISPATCH: 'Consignment Sealed for Dispatch',
             DISPATCHED: 'Loaded into Flight Sortation Bay',
+            OUT_FOR_DELIVERY: 'Out for delivery',
             IN_TRANSIT: 'Out for Delivery with BlueDart',
             DELIVERED: 'Delivered & Signed',
+            RETURN_REQUESTED: 'Return requested',
+            RETURN_APPROVED: 'Return approved',
+            RETURN_REJECTED: 'Return rejected',
+            RETURNED: 'Returned',
+            REFUND_PROCESSED: 'Refund processed',
+            COMPLETED: 'Completed',
+            EXCEPTION: 'Exception',
             CANCELLED: 'Order Cancelled',
           };
 
